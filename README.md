@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌍 AI Travel Planner
 
-## Getting Started
+**AI Travel Planner** คือเว็บแอปพลิเคชันสำหรับวางแผนการท่องเที่ยวอัจฉริยะที่ขับเคลื่อนด้วย Gemini AI ช่วยให้คุณวางแผนทริปในฝันได้ในไม่กี่วินาที พร้อมแสดงสถานที่บนแผนที่แบบ Interactive และระบบบันทึกแผนการเดินทาง
 
-First, run the development server:
+## ✨ คุณสมบัติ (Features)
 
+- 🤖 **AI Travel Planning**: คุยกับ AI (Gemini) เพื่อให้ช่วยออกแบบทริปตามความต้องการ เช่น "เที่ยวลำพูน 3 วัน 2 คืน"
+- 📍 **Interactive Map**: แสดงหมุดสถานที่ท่องเที่ยวและเส้นทางการเดินทางผ่านไลบรารี [Mapcn](https://www.mapcn.dev/)
+- 💾 **Save & History**: บันทึกแผนการท่องเที่ยวลงในฐานข้อมูล MongoDB และเรียกดูย้อนหลังได้ทุกเมื่อ
+- 🗺️ **Auto-Navigation**: แสดงพิกัด (Lat/Lng) ของสถานที่ต่างๆ ที่ AI แนะนำโดยอัตโนมัติ
+- 🎨 **Modern UI**: หน้าจอสวยงาม ใช้งานง่าย รองรับทั้ง Desktop และ Mobile
+
+## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
+
+- **Framework**: [Next.js 15 (App Router)](https://nextjs.org/)
+- **Language**: TypeScript
+- **AI**: [Google Gemini AI (Generative AI)](https://ai.google.dev/)
+- **Map**: [Mapcn](https://www.mapcn.dev/) (Based on MapLibre GL)
+- **Database**: [MongoDB](https://www.mongodb.com/) (Local Community Server)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
+
+## 🚀 เริ่มต้นใช้งาน (Getting Started)
+
+### 1. ติดตั้ง Dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. ตั้งค่า Environment Variables
+สร้างไฟล์ `.env.local` ที่ root directory และกำหนดค่าดังนี้:
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+MONGODB_URI=mongodb://localhost:27017/travel-planner
+```
+*(หมายเหตุ: ต้องมี MongoDB Local รันอยู่ในเครื่อง หรือใช้ MongoDB Atlas)*
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. รันโปรเจกต์ (Development)
+```bash
+npm run dev
+```
+เปิดเบราว์เซอร์ไปที่ [http://localhost:3000](http://localhost:3000)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📖 วิธีใช้งาน
 
-## Learn More
+1. พิมพ์บอก AI ว่าคุณต้องการไปเที่ยวที่ไหน และไปกี่วัน ในช่อง Chat (เช่น "แนะนำที่เที่ยวเชียงราย 2 วัน 1 คืน")
+2. AI จะประมวลผลและสร้างแผนการเดินทาง พร้อมปักหมุดลงในแผนที่ให้ทันที
+3. คุณสามารถกดปุ่ม **"Save Plan"** เพื่อบันทึกทริปนี้ไว้
+4. กดที่ปุ่ม **"History"** เพื่อดูทริปที่เคยบันทึกไว้ในอดีต
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+พัฒนาเพื่อเป็นโปรเจกต์ตัวอย่างสำหรับการใช้งาน AI ร่วมกับระบบแผนที่และฐานข้อมูล
