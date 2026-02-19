@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-export const runtime = "edge"; // Use Edge Runtime for better streaming support
+export const runtime = "edge";
 
 export async function POST(req: Request) {
   try {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: "Prompt is required" }), { status: 400 });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const systemPrompt = `
       You are a creative and expert travel planner. 
@@ -21,6 +21,9 @@ export async function POST(req: Request) {
       STEP 1: Write a beautiful, creative travel plan in Markdown format. Use emojis and engaging headers.
       STEP 2: End your plan with exactly this separator: ---JSON_DATA---
       STEP 3: After the separator, provide the trip data in JSON format for the map.
+      
+      Provide a "type" for icons.
+      Possible types: "temple", "cafe", "restaurant", "park", "hotel", "mall", "landmark", "nature", "market".
       
       The JSON structure MUST be:
       {
@@ -33,7 +36,8 @@ export async function POST(req: Request) {
             "lat": latitude,
             "lng": longitude,
             "day": day_number,
-            "description": "Short creative description"
+            "description": "Short creative description",
+            "type": "one_of_the_types_above"
           }
         ]
       }
@@ -44,7 +48,6 @@ export async function POST(req: Request) {
 
     const result = await model.generateContentStream([systemPrompt, prompt]);
 
-    // Create a ReadableStream to stream the response back to the client
     const stream = new ReadableStream({
       async start(controller) {
         for await (const chunk of result.stream) {
