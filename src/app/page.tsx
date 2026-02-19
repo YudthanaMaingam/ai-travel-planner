@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Loader2, Send, MapPin, Calendar, Save, History, Plus, 
   ExternalLink, Coffee, Utensils, TreePine, Building2, 
-  Tent, Store, Landmark, Hotel, Church, Trash2 
+  Tent, Store, Landmark, Hotel, Church, Trash2, Search 
 } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 
@@ -84,21 +84,24 @@ export default function TravelPlanner() {
   };
 
   const getIcon = (type: string) => {
-    switch (type?.toLowerCase()) {
-      case "cafe": return <Coffee className="h-5 w-5" />;
-      case "restaurant": return <Utensils className="h-5 w-5" />;
-      case "park": return <TreePine className="h-5 w-5" />;
-      case "nature": return <Tent className="h-5 w-5" />;
-      case "mall": return <Store className="h-5 w-5" />;
-      case "landmark": return <Landmark className="h-5 w-5" />;
-      case "hotel": return <Hotel className="h-5 w-5" />;
-      case "temple": return <Church className="h-5 w-5" />;
-      default: return <MapPin className="h-5 w-5" />;
-    }
+    const t = type?.toLowerCase();
+    if (t === "คาเฟ่" || t === "cafe") return <Coffee className="h-5 w-5" />;
+    if (t === "ร้านอาหาร" || t === "restaurant") return <Utensils className="h-5 w-5" />;
+    if (t === "สวนสาธารณะ" || t === "park") return <TreePine className="h-5 w-5" />;
+    if (t === "ธรรมชาติ" || t === "nature") return <Tent className="h-5 w-5" />;
+    if (t === "ห้างสรรพสินค้า" || t === "mall") return <Store className="h-5 w-5" />;
+    if (t === "สถานที่สำคัญ" || t === "landmark") return <Landmark className="h-5 w-5" />;
+    if (t === "โรงแรม" || t === "hotel") return <Hotel className="h-5 w-5" />;
+    if (t === "วัด" || t === "temple") return <Church className="h-5 w-5" />;
+    return <MapPin className="h-5 w-5" />;
   };
 
   const generateGoogleMapsLink = (name: string, destination: string) => {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + " " + destination)}`;
+  };
+
+  const generateGoogleSearchLink = (name: string, destination: string) => {
+    return `https://www.google.com/search?q=${encodeURIComponent(name + " " + destination)}`;
   };
 
   const handleSend = async () => {
@@ -135,7 +138,11 @@ export default function TravelPlanner() {
       const finalParts = fullText.split("---JSON_DATA---");
       if (finalParts.length > 1) {
         try {
-          const jsonData = JSON.parse(finalParts[1].trim());
+          let jsonString = finalParts[1].trim();
+          // ลบ ```json และ ``` ออกถ้า AI แถมมา
+          jsonString = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();
+          
+          const jsonData = JSON.parse(jsonString);
           const completedTrip = {
             ...jsonData,
             plan: finalParts[0]
@@ -199,7 +206,7 @@ export default function TravelPlanner() {
   return (
     <div className="flex flex-col h-screen bg-background text-foreground font-sans">
       <header className="border-b p-4 flex justify-between items-center bg-card shadow-sm z-20">
-        <h1 className="text-2xl font-black flex items-center gap-2 tracking-tight">
+        <h1 className="text-2xl font-black flex items-center gap-2 tracking-tight text-primary">
           <div className="bg-primary p-1.5 rounded-lg shadow-lg">
             <MapPin className="text-primary-foreground h-6 w-6" />
           </div>
@@ -207,15 +214,15 @@ export default function TravelPlanner() {
         </h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-full font-bold">
-            <History className="mr-2 h-4 w-4" /> History
+            <History className="mr-2 h-4 w-4" /> ประวัติการเที่ยว
           </Button>
           {currentTrip && !currentTrip._id && (
             <Button size="sm" onClick={saveTrip} disabled={isLoading} className="rounded-full font-bold bg-gradient-to-r from-blue-600 to-primary shadow-md">
-              <Save className="mr-2 h-4 w-4" /> Save Plan
+              <Save className="mr-2 h-4 w-4" /> บันทึกแผน
             </Button>
           )}
-          <Button size="sm" variant="ghost" onClick={() => {setCurrentTrip(null); setStreamingText(""); setInput("");}} className="rounded-full">
-            <Plus className="h-4 w-4" /> New
+          <Button size="sm" variant="ghost" onClick={() => {setCurrentTrip(null); setStreamingText(""); setInput("");}} className="rounded-full font-bold">
+            <Plus className="h-4 w-4" /> สร้างใหม่
           </Button>
         </div>
       </header>
@@ -234,7 +241,7 @@ export default function TravelPlanner() {
                 <div className="space-y-3">
                   <h2 className="text-3xl font-black tracking-tight">พร้อมออกเดินทางหรือยัง?</h2>
                   <p className="text-muted-foreground px-12 text-base leading-relaxed">
-                    บอกจุดหมายที่คุณใฝ่ฝัน แล้วให้ AI สร้างทริปที่มาพร้อมพิกัดนำทางบน Google Maps ที่แม่นยำ
+                    บอกที่ที่คุณอยากไป แล้วปล่อยให้ AI สร้างทริปในฝันที่มาพร้อมพิกัดนำทางบน Google Maps ที่แม่นยำ
                   </p>
                 </div>
                 <div className="flex flex-wrap justify-center gap-3 px-8">
@@ -283,18 +290,32 @@ export default function TravelPlanner() {
                               <div className="flex-1 space-y-1">
                                 <div className="flex justify-between items-center">
                                   <span className="font-black text-xl leading-tight">{idx + 1}. {loc.name}</span>
-                                  {loc.day && <span className="text-[10px] font-black uppercase tracking-widest bg-primary/20 text-primary px-2 py-1 rounded-md">Day {loc.day}</span>}
+                                  {loc.day && <span className="text-[10px] font-black uppercase tracking-widest bg-primary/20 text-primary px-2 py-1 rounded-md">วันที่ {loc.day}</span>}
+                                </div>
+                                <div className="flex items-center gap-2 text-xs font-bold text-primary mb-1">
+                                    <span className="bg-primary/10 px-2 py-0.5 rounded-md italic">{loc.type}</span>
                                 </div>
                                 {loc.description && <p className="text-sm text-muted-foreground font-medium leading-snug">{loc.description}</p>}
-                                <a 
-                                  href={generateGoogleMapsLink(loc.name, currentTrip.destination)} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer" 
-                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline pt-2"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  ค้นหาใน Google Maps <ExternalLink className="h-3 w-3" />
-                                </a>
+                                <div className="flex gap-4 pt-2">
+                                  <a 
+                                    href={generateGoogleMapsLink(loc.name, currentTrip.destination)} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    Google Maps <ExternalLink className="h-3 w-3" />
+                                  </a>
+                                  <a 
+                                    href={generateGoogleSearchLink(loc.name, currentTrip.destination)} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary hover:underline transition-colors"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    ค้นหาข้อมูล <Search className="h-3 w-3" />
+                                  </a>
+                                </div>
                               </div>
                             </div>
                           </CardContent>
@@ -342,13 +363,16 @@ export default function TravelPlanner() {
                     </div>
                   </div>
                 </MarkerContent>
-                <MarkerPopup className="p-0 border-none shadow-2xl overflow-hidden rounded-3xl min-w-[280px]">
+                <MarkerPopup className="p-0 border-none shadow-2xl overflow-hidden rounded-3xl min-w-[300px]">
                   <div className="p-6 bg-card space-y-4">
                     <div className="flex items-center gap-3">
                       <div className="bg-primary/20 p-2.5 rounded-xl text-primary">
                         {getIcon(loc.type)}
                       </div>
-                      <h4 className="font-black text-xl leading-none">{loc.name}</h4>
+                      <div className="space-y-0.5">
+                        <h4 className="font-black text-xl leading-none">{loc.name}</h4>
+                        <span className="text-[10px] font-bold text-primary uppercase">{loc.type}</span>
+                      </div>
                     </div>
                     {loc.description && <p className="text-sm text-muted-foreground font-medium">{loc.description}</p>}
                     <div className="pt-2 flex gap-2">
@@ -361,6 +385,15 @@ export default function TravelPlanner() {
                           Google Maps <ExternalLink className="ml-2 h-3.5 w-3.5" />
                         </a>
                       </Button>
+                      <Button asChild variant="outline" size="sm" className="w-full rounded-xl font-bold">
+                        <a 
+                          href={generateGoogleSearchLink(loc.name, currentTrip.destination)} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >
+                          ค้นหาข้อมูล <Search className="ml-2 h-3.5 w-3.5" />
+                        </a>
+                      </Button>
                     </div>
                   </div>
                 </MarkerPopup>
@@ -370,7 +403,7 @@ export default function TravelPlanner() {
             {routeCoordinates.length > 1 && (
               <MapRoute 
                 coordinates={routeCoordinates}
-                color="hsl(var(--primary))"
+                color="#3b82f6"
                 width={6}
                 opacity={0.3}
               />
@@ -381,13 +414,15 @@ export default function TravelPlanner() {
             <div className="absolute inset-0 z-30 bg-background/60 backdrop-blur-2xl p-6 md:p-16 animate-in zoom-in-95 duration-500">
               <div className="max-w-4xl mx-auto bg-card border-4 border-muted rounded-[2rem] shadow-2xl h-full flex flex-col overflow-hidden">
                 <div className="p-8 border-b flex justify-between items-center bg-muted/20">
-                  <h3 className="text-3xl font-black tracking-tighter">Saved Trips</h3>
+                  <h3 className="text-3xl font-black tracking-tighter text-primary">ประวัติการเดินทางของคุณ</h3>
                   <Button variant="outline" size="sm" onClick={() => setShowHistory(false)} className="rounded-full font-bold px-6">ปิด</Button>
                 </div>
                 <ScrollArea className="flex-1 p-8">
                   {savedTrips.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center py-20 text-muted-foreground space-y-6">
-                      <History className="h-16 w-16 opacity-20" />
+                      <div className="bg-muted p-6 rounded-full">
+                        <History className="h-16 w-16 opacity-20" />
+                      </div>
                       <p className="text-xl font-bold">ยังไม่มีทริปที่บันทึกไว้</p>
                     </div>
                   ) : (
@@ -403,10 +438,10 @@ export default function TravelPlanner() {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                           <CardHeader className="p-6">
-                            <CardTitle className="text-2xl font-black group-hover:text-primary transition-colors pr-8">{trip.title}</CardTitle>
+                            <CardTitle className="text-2xl font-black group-hover:text-primary transition-colors pr-8 leading-tight">{trip.title}</CardTitle>
                             <div className="flex gap-4 text-sm font-bold text-muted-foreground pt-4">
-                              <span className="flex items-center gap-1.5 text-primary"> {trip.destination}</span>
-                              <span className="flex items-center gap-1.5"> {trip.duration}</span>
+                              <span className="flex items-center gap-1.5 text-primary"> <MapPin className="h-4 w-4" /> {trip.destination}</span>
+                              <span className="flex items-center gap-1.5"> <Calendar className="h-4 w-4" /> {trip.duration}</span>
                             </div>
                           </CardHeader>
                         </Card>

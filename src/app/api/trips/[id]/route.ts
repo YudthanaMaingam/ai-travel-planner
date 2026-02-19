@@ -4,11 +4,13 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
-    const { id } = await params;
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
+    
     const deletedTrip = await Trip.findByIdAndDelete(id);
     
     if (!deletedTrip) {
